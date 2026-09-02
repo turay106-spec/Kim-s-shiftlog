@@ -1,0 +1,315 @@
+:root {
+  --green: #0f5132;
+  --green-dark: #0a3d26;
+  --green-soft: #e8f3ed;
+  --bg: #f5f7f6;
+  --card: #ffffff;
+  --text: #15231c;
+  --muted: #6a756f;
+  --border: #dfe7e2;
+  --danger: #b42318;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+button,
+input {
+  font: inherit;
+}
+.app-shell {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 22px 16px 40px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.eyebrow {
+  margin: 0 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.clock-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 26px;
+  text-align: center;
+}
+
+.clock-section h2 {
+  margin-bottom: 8px;
+}
+
+#clockStatus {
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.clock-timer {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin: 18px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+#clockButton {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--green);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#clockButton.clock-out {
+  background: var(--danger);
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+h1 {
+  margin-bottom: 0;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+}
+h2 {
+  margin-bottom: 4px;
+  font-size: 20px;
+}
+.muted,
+.section-heading p,
+footer p {
+  color: var(--muted);
+}
+.hero-card {
+  background: var(--green);
+  color: #fff;
+  border-radius: 22px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 12px 30px rgba(15, 81, 50, 0.16);
+}
+.hero-card .muted {
+  color: #d7e8df;
+  margin-bottom: 6px;
+}
+.hero-number {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 28px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 12px 0 26px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+}
+.stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.stat-card strong {
+  font-size: 18px;
+}
+.section-heading {
+  margin-bottom: 12px;
+}
+.shift-form {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.optional {
+  color: var(--muted);
+  font-weight: 500;
+}
+input {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+}
+input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.1);
+}
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+.primary-btn,
+.secondary-btn,
+.ghost-btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 11px 15px;
+  cursor: pointer;
+  font-weight: 750;
+}
+.primary-btn {
+  background: var(--green);
+  color: white;
+  flex: 1;
+}
+.secondary-btn {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+.ghost-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--green-dark);
+}
+.form-message {
+  min-height: 18px;
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+.hidden {
+  display: none;
+}
+.list-heading {
+  margin-top: 26px;
+}
+.shift-list {
+  display: grid;
+  gap: 10px;
+}
+.shift-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+.shift-date {
+  font-weight: 800;
+}
+.shift-time {
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 13px;
+}
+.shift-duration {
+  font-weight: 800;
+  color: var(--green);
+  text-align: right;
+}
+.shift-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.card-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.small-btn {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 750;
+}
+.small-btn.delete {
+  color: var(--danger);
+}
+.empty {
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+footer {
+  padding: 24px 4px 0;
+  text-align: center;
+  font-size: 12px;
+}
+@media (max-width: 420px) {
+  .hero-number {
+    font-size: 34px;
+  }
+  .stat-card {
+    padding: 11px;
+  }
+  .stat-card strong {
+    font-size: 16px;
+  }
+  .ghost-btn {
+    padding: 9px 11px;
+  }
+}

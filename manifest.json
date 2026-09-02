@@ -1,0 +1,9 @@
+{
+  "name": "ShiftLog — Second Job Tracker",
+  "short_name": "ShiftLog",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f6",
+  "theme_color": "#0f5132",
+  "icons": []
+}

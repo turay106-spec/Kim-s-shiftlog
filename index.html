@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f5132" />
+    <meta
+      name="description"
+      content="Simple second-job shift tracker for clocking in, clocking out and calculating hours."
+    />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>ShiftLog — Second Job Tracker</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">HAKIM'S</p>
+          <h1>ShiftLog</h1>
+        </div>
+        <button id="exportBtn" class="ghost-btn" type="button">
+          Export CSV
+        </button>
+      </header>
+
+      <section class="hero-card">
+        <div>
+          <p class="muted">Total hours this month</p>
+          <div class="hero-number" id="monthHours">0h 00m</div>
+          <p class="muted" id="monthLabel">Current month</p>
+        </div>
+        <div class="hero-icon">⏱</div>
+      </section>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span>Total hours</span><strong id="totalHours">0h 00m</strong>
+        </div>
+        <div class="stat-card">
+          <span>Shifts</span><strong id="shiftCount">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Avg. shift</span><strong id="avgHours">0h 00m</strong>
+        </div>
+        <div class="stat-card">
+          <span>This week</span><strong id="weekHours">0h 00m</strong>
+        </div>
+      </section>
+
+      <section class="clock-section">
+        <h2>Quick Clock</h2>
+
+        <p id="clockStatus">You're currently clocked out</p>
+
+        <div id="liveTimer" class="clock-timer hidden">00:00:00</div>
+
+        <button id="clockButton" type="button">CLOCK IN</button>
+      </section>
+
+      <section class="section-heading">
+        <div>
+          <h2>Log a shift</h2>
+          <p>Clock in when you arrive and clock out when you finish.</p>
+        </div>
+      </section>
+
+      <form id="shiftForm" class="shift-form">
+        <input type="hidden" id="editId" />
+        <label>Date<input id="date" type="date" required /></label>
+        <div class="two-col">
+          <label>Time in<input id="timeIn" type="time" required /></label>
+          <label>Time out<input id="timeOut" type="time" required /></label>
+        </div>
+        <label
+          >Note <span class="optional">(optional)</span
+          ><input
+            id="note"
+            type="text"
+            maxlength="80"
+            placeholder="e.g. Friday late shift"
+        /></label>
+        <div class="form-actions">
+          <button id="saveBtn" class="primary-btn" type="submit">
+            Add shift
+          </button>
+          <button id="cancelEditBtn" class="secondary-btn hidden" type="button">
+            Cancel
+          </button>
+        </div>
+        <p id="formMessage" class="form-message" role="status"></p>
+      </form>
+
+      <section class="section-heading list-heading">
+        <div>
+          <h2>Recent shifts</h2>
+          <p>Your hours are saved on this device.</p>
+        </div>
+      </section>
+
+      <section id="shiftList" class="shift-list" aria-live="polite"></section>
+
+      <footer>
+        <p>Built as a simple mobile-first MVP. No account required.</p>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
