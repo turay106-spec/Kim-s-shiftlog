@@ -178,8 +178,21 @@ label {
   color: var(--muted);
   font-weight: 500;
 }
+/* input {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+} */
+
 input {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   margin-top: 6px;
   border: 1px solid var(--border);
   border-radius: 11px;
@@ -311,5 +324,27 @@ footer {
   }
   .ghost-btn {
     padding: 9px 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell {
+    padding: 16px 12px 32px;
+  }
+
+  .shift-form {
+    padding: 14px;
+  }
+
+  .clock-section {
+    padding: 18px;
+  }
+
+  input {
+    min-width: 0;
   }
 }
