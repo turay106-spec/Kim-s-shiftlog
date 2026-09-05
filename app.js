@@ -443,9 +443,26 @@ createExportBtn.addEventListener("click", () => {
     filteredShifts = shifts.filter((shift) => {
       return shift.date.slice(0, 4) === selectedYear;
     });
-  } else {
-    alert("Week filtering is coming next.");
-    return;
+  } else if (selectedPeriod === "week") {
+    const chosenDate = dateFromKey(selectedDate);
+
+    const dayOfWeek = chosenDate.getDay();
+
+    const daysSinceMonday = (dayOfWeek + 6) % 7;
+
+    const startOfWeek = new Date(chosenDate);
+
+    startOfWeek.setDate(chosenDate.getDate() - daysSinceMonday);
+
+    const endOfWeek = new Date(startOfWeek);
+
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    filteredShifts = shifts.filter((shift) => {
+      const shiftDate = dateFromKey(shift.date);
+
+      return shiftDate >= startOfWeek && shiftDate <= endOfWeek;
+    });
   }
 
   console.log(filteredShifts);
@@ -460,6 +477,12 @@ function resetForm() {
   saveBtn.textContent = "Add shift";
   cancelEditBtn.classList.add("hidden");
   formMessage.textContent = "";
+}
+
+function dateFromKey(dateKey) {
+  const [year, month, day] = dateKey.split("-");
+
+  return new Date(Number(year), Number(month) - 1, Number(day));
 }
 
 function escapeHtml(value) {
