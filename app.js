@@ -425,6 +425,34 @@ $("exportBtn").addEventListener("click", () => {
   exportPanel.classList.toggle("hidden");
 });
 
+createExportBtn.addEventListener("click", () => {
+  const selectedPeriod = exportPeriod.value;
+  const selectedDate = exportDate.value;
+
+  let filteredShifts = [];
+
+  if (selectedPeriod === "month") {
+    const selectedMonth = selectedDate.slice(0, 7);
+
+    filteredShifts = shifts.filter((shift) => {
+      return shift.date.slice(0, 7) === selectedMonth;
+    });
+  } else if (selectedPeriod === "year") {
+    const selectedYear = selectedDate.slice(0, 4);
+
+    filteredShifts = shifts.filter((shift) => {
+      return shift.date.slice(0, 4) === selectedYear;
+    });
+  } else {
+    alert("Week filtering is coming next.");
+    return;
+  }
+
+  console.log(filteredShifts);
+
+  alert(`${filteredShifts.length} shift(s) found`);
+});
+
 function resetForm() {
   form.reset();
   editIdInput.value = "";
