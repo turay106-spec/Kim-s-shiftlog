@@ -16,6 +16,11 @@ const editIdInput = $("editId");
 const saveBtn = $("saveBtn");
 const cancelEditBtn = $("cancelEditBtn");
 const formMessage = $("formMessage");
+const exportPanel = $("exportPanel");
+const exportPeriod = $("exportPeriod");
+const exportDate = $("exportDate");
+const exportFormat = $("exportFormat");
+const createExportBtn = $("createExportBtn");
 
 let activeShift = loadActiveShift();
 
@@ -24,6 +29,8 @@ let shifts = loadShifts();
 let clockTimerInterval = null;
 
 dateInput.value = new Date().toISOString().slice(0, 10);
+
+exportDate.value = localDateKey();
 
 render();
 renderClockState();
@@ -369,45 +376,53 @@ $("shiftList").addEventListener("click", (event) => {
 
 cancelEditBtn.addEventListener("click", resetForm);
 
+// OLD BTN BEHAVIOR
+
+// $("exportBtn").addEventListener("click", () => {
+//   if (!shifts.length) return alert("There are no shifts to export yet.");
+//   const rows = [["Date", "Time In", "Time Out", "Hours", "Minutes", "Note"]];
+//   [...shifts]
+//     .sort((a, b) =>
+//       `${a.date}${a.timeIn}`.localeCompare(`${b.date}${b.timeIn}`),
+//     )
+//     .forEach((s) => {
+//       rows.push([
+//         s.date,
+//         s.timeIn,
+//         s.timeOut,
+//         (s.minutes / 60).toFixed(2),
+//         s.minutes,
+//         s.note || "",
+//       ]);
+//     });
+//   const totalMinutes = shifts.reduce((sum, s) => sum + s.minutes, 0);
+//   rows.push([]);
+//   rows.push([
+//     "TOTAL",
+//     "",
+//     "",
+//     (totalMinutes / 60).toFixed(2),
+//     totalMinutes,
+//     "All recorded shifts",
+//   ]);
+//   const csv = rows
+//     .map((row) =>
+//       row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
+//     )
+//     .join("\n");
+//   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+//   const url = URL.createObjectURL(blob);
+//   const a = document.createElement("a");
+//   a.href = url;
+//   a.download = `shiftlog-${currentMonthKey()}.csv`;
+//   a.click();
+//   URL.revokeObjectURL(url);
+// });
+
+// NEW BTN BEHAVIOR
+
 $("exportBtn").addEventListener("click", () => {
-  if (!shifts.length) return alert("There are no shifts to export yet.");
-  const rows = [["Date", "Time In", "Time Out", "Hours", "Minutes", "Note"]];
-  [...shifts]
-    .sort((a, b) =>
-      `${a.date}${a.timeIn}`.localeCompare(`${b.date}${b.timeIn}`),
-    )
-    .forEach((s) => {
-      rows.push([
-        s.date,
-        s.timeIn,
-        s.timeOut,
-        (s.minutes / 60).toFixed(2),
-        s.minutes,
-        s.note || "",
-      ]);
-    });
-  const totalMinutes = shifts.reduce((sum, s) => sum + s.minutes, 0);
-  rows.push([]);
-  rows.push([
-    "TOTAL",
-    "",
-    "",
-    (totalMinutes / 60).toFixed(2),
-    totalMinutes,
-    "All recorded shifts",
-  ]);
-  const csv = rows
-    .map((row) =>
-      row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
-    )
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `shiftlog-${currentMonthKey()}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  exportPanel.classList.toggle("hidden");
 });
 
 function resetForm() {

@@ -26,7 +26,8 @@ body {
   color: var(--text);
 }
 button,
-input {
+input,
+select {
   font: inherit;
 }
 .app-shell {
@@ -47,6 +48,14 @@ input {
   letter-spacing: 0.14em;
   font-weight: 800;
   color: var(--green);
+}
+
+.export-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 18px;
 }
 
 .clock-section {
@@ -189,7 +198,8 @@ label {
   outline: none;
 } */
 
-input {
+input,
+select {
   width: 100%;
   max-width: 100%;
   min-width: 0;

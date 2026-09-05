@@ -25,9 +25,40 @@
           <h1>ShiftLog</h1>
         </div>
         <button id="exportBtn" class="ghost-btn" type="button">
-          Export CSV
+          Export Report
         </button>
       </header>
+
+      <section id="exportPanel" class="export-panel hidden">
+        <h2>Export Report</h2>
+
+        <label>
+          Period
+          <select id="exportPeriod">
+            <option value="week">Week</option>
+            <option value="month" selected>Month</option>
+            <option value="year">Year</option>
+          </select>
+        </label>
+
+        <label>
+          Choose date
+          <input id="exportDate" type="date" />
+        </label>
+
+        <label>
+          Format
+          <select id="exportFormat">
+            <option value="pdf">PDF</option>
+            <option value="doc">Word</option>
+            <option value="csv">CSV</option>
+          </select>
+        </label>
+
+        <button id="createExportBtn" class="primary-btn" type="button">
+          Create Report
+        </button>
+      </section>
 
       <section class="hero-card">
         <div>
