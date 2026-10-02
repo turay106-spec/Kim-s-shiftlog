@@ -29,6 +29,7 @@ let clockTimerInterval = null;
 let clockActionLocked = false;
 let installPrompt = null;
 let toastTimer = null;
+let currentPdfModel = null;
 
 const form = $("shiftForm");
 const dateInput = $("date");
@@ -1015,6 +1016,7 @@ function createWordReport(model) {
 }
 
 function createPdfReport(model) {
+  currentPdfModel = model;
   pdfPreviewFrame.srcdoc = buildReportHtml(model);
   pdfPreviewOverlay.classList.remove("hidden");
   pdfPreviewOverlay.setAttribute("aria-hidden", "false");
@@ -1027,17 +1029,218 @@ function closePdfPreview() {
   pdfPreviewOverlay.setAttribute("aria-hidden", "true");
   document.body.classList.remove("pdf-preview-open");
   pdfPreviewFrame.srcdoc = "";
+  currentPdfModel = null;
 }
 
-function printPdfPreview() {
-  const frameWindow = pdfPreviewFrame.contentWindow;
-  if (!frameWindow) {
-    showToast("The PDF preview is not ready yet. Please try again.");
+function pdfSafeText(value) {
+  return String(value ?? "")
+    .replace(/£/g, "GBP ")
+    .replace(/€/g, "EUR ")
+    .replace(/[–—]/g, "-")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x20-\x7E]/g, "?")
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
+
+function buildPdfBlob(model) {
+  const pageWidth = 842;
+  const pageHeight = 595;
+  const margin = 36;
+  const rowHeight = 24;
+  const rowsPerPage = 14;
+  const columnWidths = [80, 70, 170, 70, 70, 60, 90, 130];
+  const headers = ["DAY", "DATE", "JOB", "TIME IN", "TIME OUT", "BREAK", "HOURS", "EST. PAY"];
+  const sortedShifts = [...model.shifts].sort((a, b) =>
+    `${a.date}${a.timeIn}`.localeCompare(`${b.date}${b.timeIn}`),
+  );
+
+  const pages = [];
+  for (let i = 0; i < sortedShifts.length; i += rowsPerPage) {
+    pages.push(sortedShifts.slice(i, i + rowsPerPage));
+  }
+  if (!pages.length) pages.push([]);
+
+  const colour = {
+    navy: "0.063 0.165 0.263",
+    green: "0.122 0.478 0.298",
+    text: "0.082 0.137 0.110",
+    muted: "0.416 0.459 0.435",
+    border: "0.875 0.906 0.886",
+    stripe: "0.961 0.969 0.965",
+    white: "1 1 1",
+  };
+
+  const textCommand = (x, y, text, size = 9, font = "F1", fill = colour.text) =>
+    `BT /${font} ${size} Tf ${fill} rg 1 0 0 1 ${x} ${y} Tm (${pdfSafeText(text)}) Tj ET\n`;
+
+  const rectCommand = (x, y, width, height, fill) =>
+    `q ${fill} rg ${x} ${y} ${width} ${height} re f Q\n`;
+
+  const lineCommand = (x1, y1, x2, y2, stroke = colour.border, width = 0.6) =>
+    `q ${stroke} RG ${width} w ${x1} ${y1} m ${x2} ${y2} l S Q\n`;
+
+  function pageContent(pageShifts, pageIndex) {
+    let stream = "";
+
+    stream += rectCommand(0, 515, pageWidth, 80, colour.navy);
+    stream += textCommand(margin, 558, "SHIFTLOG TIMESHEET", 22, "F2", colour.white);
+    stream += textCommand(margin, 538, "Employee work hours log", 10, "F1", "0.847 0.902 0.945");
+    stream += textCommand(575, 558, model.range.label, 12, "F2", colour.white);
+    stream += textCommand(575, 539, model.jobLabel, 9, "F1", "0.847 0.902 0.945");
+
+    stream += textCommand(margin, 494, `REPORT: ${model.range.label}`, 9, "F2", colour.green);
+    stream += textCommand(420, 494, `JOB: ${model.jobLabel}`, 9, "F2", colour.green);
+    stream += lineCommand(margin, 486, pageWidth - margin, 486);
+
+    const tableTop = 474;
+    const headerBottom = tableTop - rowHeight;
+    stream += rectCommand(margin, headerBottom, columnWidths.reduce((a, b) => a + b, 0), rowHeight, colour.green);
+
+    let x = margin;
+    headers.forEach((header, index) => {
+      stream += textCommand(x + 5, headerBottom + 8, header, 7.5, "F2", colour.white);
+      x += columnWidths[index];
+    });
+
+    let y = headerBottom;
+    pageShifts.forEach((shift, rowIndex) => {
+      const rowBottom = y - rowHeight;
+      if (rowIndex % 2 === 1) {
+        stream += rectCommand(margin, rowBottom, columnWidths.reduce((a, b) => a + b, 0), rowHeight, colour.stripe);
+      }
+
+      const day = new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(dateFromKey(shift.date));
+      const row = [
+        day,
+        shortDateLabel(shift.date),
+        getJob(shift.jobId)?.name || "Unassigned",
+        shift.timeIn,
+        shift.timeOut,
+        String(shift.breakMinutes || 0),
+        formatDuration(shift.minutes),
+        `${settings.currency || "GBP"} ${getShiftEarnings(shift).toFixed(2)}`,
+      ];
+
+      let cellX = margin;
+      row.forEach((cell, index) => {
+        let display = pdfSafeText(cell);
+        const maxChars = Math.max(5, Math.floor(columnWidths[index] / 5.1));
+        if (display.length > maxChars) display = `${display.slice(0, maxChars - 1)}.`;
+        stream += textCommand(cellX + 5, rowBottom + 8, display, 7.5, index === 6 || index === 7 ? "F2" : "F1");
+        cellX += columnWidths[index];
+      });
+      stream += lineCommand(margin, rowBottom, margin + columnWidths.reduce((a, b) => a + b, 0), rowBottom);
+      y = rowBottom;
+    });
+
+    if (pageIndex === pages.length - 1) {
+      stream += rectCommand(margin, 43, pageWidth - margin * 2, 62, colour.navy);
+      stream += textCommand(margin + 18, 84, "SHIFTS", 7.5, "F1", "0.749 0.835 0.784");
+      stream += textCommand(margin + 18, 60, String(model.summary.count), 17, "F2", colour.white);
+      stream += textCommand(margin + 240, 84, "TOTAL HOURS", 7.5, "F1", "0.749 0.835 0.784");
+      stream += textCommand(margin + 240, 60, formatDuration(model.summary.totalMinutes), 17, "F2", colour.white);
+      stream += textCommand(margin + 495, 84, "EST. EARNINGS", 7.5, "F1", "0.749 0.835 0.784");
+      stream += textCommand(
+        margin + 495,
+        60,
+        `${settings.currency || "GBP"} ${model.summary.earnings.toFixed(2)}`,
+        17,
+        "F2",
+        colour.white,
+      );
+    }
+
+    stream += textCommand(
+      margin,
+      20,
+      `Generated by ShiftLog - ${new Date().toLocaleString("en-GB")}`,
+      7,
+      "F1",
+      colour.muted,
+    );
+    stream += textCommand(pageWidth - 92, 20, `Page ${pageIndex + 1} of ${pages.length}`, 7, "F1", colour.muted);
+
+    return stream;
+  }
+
+  const objects = [null, null];
+  const addObject = (content) => {
+    objects.push(content);
+    return objects.length;
+  };
+
+  const regularFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const boldFontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
+  const pageIds = [];
+
+  pages.forEach((pageShifts, pageIndex) => {
+    const stream = pageContent(pageShifts, pageIndex);
+    const streamLength = new TextEncoder().encode(stream).length;
+    const contentId = addObject(`<< /Length ${streamLength} >>\nstream\n${stream}endstream`);
+    const pageId = addObject("");
+    pageIds.push(pageId);
+    objects[pageId - 1] =
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] ` +
+      `/Resources << /Font << /F1 ${regularFontId} 0 R /F2 ${boldFontId} 0 R >> >> ` +
+      `/Contents ${contentId} 0 R >>`;
+  });
+
+  objects[0] = "<< /Type /Catalog /Pages 2 0 R >>";
+  objects[1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
+
+  let pdf = "%PDF-1.4\n%ShiftLog\n";
+  const offsets = [0];
+
+  objects.forEach((content, index) => {
+    offsets[index + 1] = new TextEncoder().encode(pdf).length;
+    pdf += `${index + 1} 0 obj\n${content}\nendobj\n`;
+  });
+
+  const xrefOffset = new TextEncoder().encode(pdf).length;
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
+  pdf += `startxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([pdf], { type: "application/pdf" });
+}
+
+async function savePdfPreview() {
+  if (!currentPdfModel) {
+    showToast("The PDF preview is not ready yet. Please create the report again.");
     return;
   }
 
-  frameWindow.focus();
-  frameWindow.print();
+  const blob = buildPdfBlob(currentPdfModel);
+  const filename = reportFilename(currentPdfModel, "pdf");
+  const file = new File([blob], filename, { type: "application/pdf" });
+
+  const canShareFile =
+    typeof navigator.share === "function" &&
+    (typeof navigator.canShare !== "function" || navigator.canShare({ files: [file] }));
+
+  if (canShareFile) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "ShiftLog PDF report",
+        text: "ShiftLog timesheet report",
+      });
+      showToast("PDF ready to save or share.");
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+
+  downloadBlob(blob, "application/pdf", filename);
+  showToast("PDF downloaded. Check your Downloads or Files app.");
 }
 
 function downloadBlob(content, mimeType, filename) {
@@ -1347,7 +1550,7 @@ createExportBtn.addEventListener("click", () => {
 
 closePdfPreviewBtn.addEventListener("click", closePdfPreview);
 
-savePdfBtn.addEventListener("click", printPdfPreview);
+savePdfBtn.addEventListener("click", savePdfPreview);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !pdfPreviewOverlay.classList.contains("hidden")) {

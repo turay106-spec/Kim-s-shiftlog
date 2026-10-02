@@ -1,4 +1,4 @@
-# ShiftLog v2
+# ShiftLog v2.0.2
 
 ShiftLog is a mobile-first, local-first Progressive Web App (PWA) for recording work shifts, clocking in/out, calculating hours, estimating earnings and exporting timesheet reports.
 
@@ -30,7 +30,7 @@ ShiftLog is a mobile-first, local-first Progressive Web App (PWA) for recording 
 
 ## Data safety
 
-ShiftLog v2 intentionally keeps the original storage keys:
+ShiftLog v2.0.2 intentionally keeps the original storage keys:
 
 - `shiftlog_shifts_v1`
 - `shiftlog_active_shift_v1`
@@ -51,9 +51,9 @@ Use **Reports → Download backup** regularly if the data matters.
 
 ## PDF export
 
-The PDF option opens a print-ready timesheet in a new window. Use the browser/system print screen and select **Save as PDF**.
+The PDF option opens a preview inside ShiftLog. **Share / Save PDF** now creates a real PDF file directly in the browser.
 
-This keeps the app dependency-free and works without adding a large PDF library.
+On iPhone/iPad, ShiftLog opens the native Share sheet so you can choose **Save to Files**, AirDrop, Mail, Messages, and other destinations. On browsers without file sharing support, ShiftLog downloads the PDF normally. The PDF generator is built into the app, so it still works offline.
 
 ## GitHub Pages
 
