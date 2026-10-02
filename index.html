@@ -2,144 +2,409 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f5132" />
+    <meta name="color-scheme" content="light" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
     <meta name="apple-mobile-web-app-title" content="ShiftLog" />
-    <meta name="theme-color" content="#0f5132" />
     <meta
       name="description"
-      content="Simple second-job shift tracker for clocking in, clocking out and calculating hours."
+      content="ShiftLog is a local-first shift tracker for clocking in, managing hours, estimating earnings and exporting reports."
     />
     <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-180.png" />
     <link rel="stylesheet" href="styles.css" />
-    <title>ShiftLog — Second Job Tracker</title>
+    <title>ShiftLog</title>
   </head>
+
   <body>
-    <main class="app-shell">
+    <div class="app-shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">HAKIM'S</p>
-          <h1>ShiftLog</h1>
-        </div>
-        <button id="exportBtn" class="ghost-btn" type="button">
-          Export Report
+        <button class="brand-button" type="button" data-view-target="dashboard" aria-label="Open dashboard">
+          <span class="eyebrow">HAKIM'S</span>
+          <span class="brand-title">ShiftLog</span>
         </button>
+
+        <div class="top-actions">
+          <span id="onlineBadge" class="status-badge" title="Connection status">Online</span>
+          <button id="quickExportBtn" class="ghost-btn" type="button">Export</button>
+        </div>
       </header>
 
-      <section id="exportPanel" class="export-panel hidden">
-        <h2>Export Report</h2>
+      <main>
+        <section id="dashboardView" class="app-view active" data-view="dashboard">
+          <section class="hero-card">
+            <div>
+              <p class="hero-kicker" id="heroPeriodLabel">This month</p>
+              <div class="hero-number" id="periodHours">0h 00m</div>
+              <p class="hero-subtitle" id="heroDateLabel">Current period</p>
+            </div>
+            <div class="hero-icon" aria-hidden="true">⏱</div>
+          </section>
 
-        <label>
-          Period
-          <select id="exportPeriod">
-            <option value="week">Week</option>
-            <option value="month" selected>Month</option>
-            <option value="year">Year</option>
-          </select>
-        </label>
+          <section class="dashboard-controls card compact-card" aria-label="Dashboard period">
+            <label>
+              Period
+              <select id="dashboardPeriod">
+                <option value="week">Week</option>
+                <option value="month" selected>Month</option>
+                <option value="year">Year</option>
+                <option value="all">All time</option>
+              </select>
+            </label>
 
-        <label>
-          Choose date
-          <input id="exportDate" type="date" />
-        </label>
+            <label id="dashboardDateWrap">
+              Choose date
+              <input id="dashboardDate" type="date" />
+            </label>
 
-        <label>
-          Format
-          <select id="exportFormat">
-            <option value="pdf">PDF</option>
-            <option value="doc">Word</option>
-            <option value="csv">CSV</option>
-          </select>
-        </label>
+            <label>
+              Job
+              <select id="dashboardJob">
+                <option value="all">All jobs</option>
+              </select>
+            </label>
+          </section>
 
-        <button id="createExportBtn" class="primary-btn" type="button">
-          Create Report
-        </button>
-      </section>
+          <section class="stats-grid" aria-label="Shift statistics">
+            <article class="stat-card">
+              <span>Hours</span>
+              <strong id="statHours">0h 00m</strong>
+            </article>
+            <article class="stat-card">
+              <span>Shifts</span>
+              <strong id="statShifts">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Est. earnings</span>
+              <strong id="statEarnings">£0.00</strong>
+            </article>
+            <article class="stat-card">
+              <span>Avg. shift</span>
+              <strong id="statAverage">0h 00m</strong>
+            </article>
+          </section>
 
-      <section class="hero-card">
-        <div>
-          <p class="muted">Total hours this month</p>
-          <div class="hero-number" id="monthHours">0h 00m</div>
-          <p class="muted" id="monthLabel">Current month</p>
-        </div>
-        <div class="hero-icon">⏱</div>
-      </section>
+          <section class="clock-section card">
+            <div class="section-heading centered">
+              <div>
+                <p class="eyebrow">QUICK CLOCK</p>
+                <h2 id="clockTitle">Ready to start?</h2>
+              </div>
+            </div>
 
-      <section class="stats-grid">
-        <div class="stat-card">
-          <span>Total hours</span><strong id="totalHours">0h 00m</strong>
-        </div>
-        <div class="stat-card">
-          <span>Shifts</span><strong id="shiftCount">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Avg. shift</span><strong id="avgHours">0h 00m</strong>
-        </div>
-        <div class="stat-card">
-          <span>This week</span><strong id="weekHours">0h 00m</strong>
-        </div>
-      </section>
+            <label class="clock-job-control">
+              Job
+              <select id="clockJob"></select>
+            </label>
 
-      <section class="clock-section">
-        <h2>Quick Clock</h2>
+            <p id="clockStatus" class="clock-status">You're currently clocked out.</p>
+            <div id="liveTimer" class="clock-timer hidden" aria-live="polite">00:00:00</div>
+            <p id="liveEarnings" class="live-earnings hidden">Estimated: £0.00</p>
 
-        <p id="clockStatus">You're currently clocked out</p>
+            <button id="clockButton" class="clock-btn" type="button">CLOCK IN</button>
+          </section>
 
-        <div id="liveTimer" class="clock-timer hidden">00:00:00</div>
+          <section class="section-heading">
+            <div>
+              <p class="eyebrow">RECENT</p>
+              <h2>Latest shifts</h2>
+              <p>Quick look at your most recent records.</p>
+            </div>
+            <button class="text-btn" type="button" data-view-target="shifts">View all</button>
+          </section>
 
-        <button id="clockButton" type="button">CLOCK IN</button>
-      </section>
+          <section id="dashboardRecent" class="shift-list"></section>
+        </section>
 
-      <section class="section-heading">
-        <div>
-          <h2>Log a shift</h2>
-          <p>Clock in when you arrive and clock out when you finish.</p>
-        </div>
-      </section>
+        <section id="shiftsView" class="app-view" data-view="shifts">
+          <section class="page-heading">
+            <p class="eyebrow">SHIFTS</p>
+            <h1>Log & manage shifts</h1>
+            <p>Add a shift manually, edit an old one or search your history.</p>
+          </section>
 
-      <form id="shiftForm" class="shift-form">
-        <input type="hidden" id="editId" />
-        <label>Date<input id="date" type="date" required /></label>
-        <div class="two-col">
-          <label>Time in<input id="timeIn" type="time" required /></label>
-          <label>Time out<input id="timeOut" type="time" required /></label>
-        </div>
-        <label
-          >Note <span class="optional">(optional)</span
-          ><input
-            id="note"
-            type="text"
-            maxlength="80"
-            placeholder="e.g. Friday late shift"
-        /></label>
-        <div class="form-actions">
-          <button id="saveBtn" class="primary-btn" type="submit">
-            Add shift
-          </button>
-          <button id="cancelEditBtn" class="secondary-btn hidden" type="button">
-            Cancel
-          </button>
-        </div>
-        <p id="formMessage" class="form-message" role="status"></p>
-      </form>
+          <section class="card">
+            <div class="section-heading">
+              <div>
+                <h2 id="shiftFormTitle">Add a shift</h2>
+                <p>Use this if you forgot to clock in or need to correct a record.</p>
+              </div>
+            </div>
 
-      <section class="section-heading list-heading">
-        <div>
-          <h2>Recent shifts</h2>
-          <p>Your hours are saved on this device.</p>
-        </div>
-      </section>
+            <form id="shiftForm" class="shift-form">
+              <input type="hidden" id="editId" />
 
-      <section id="shiftList" class="shift-list" aria-live="polite"></section>
+              <div class="form-grid">
+                <label>
+                  Date
+                  <input id="date" type="date" required />
+                </label>
 
-      <footer>
-        <p>Built as a simple mobile-first MVP. No account required.</p>
-      </footer>
-    </main>
+                <label>
+                  Job
+                  <select id="jobId" required></select>
+                </label>
+
+                <label>
+                  Time in
+                  <input id="timeIn" type="time" required />
+                </label>
+
+                <label>
+                  Time out
+                  <input id="timeOut" type="time" required />
+                </label>
+
+                <label>
+                  Unpaid break (minutes)
+                  <input id="breakMinutes" type="number" min="0" step="1" value="0" inputmode="numeric" />
+                </label>
+
+                <label>
+                  Note <span class="optional">(optional)</span>
+                  <input id="note" type="text" maxlength="120" placeholder="e.g. Friday late shift" />
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button id="saveBtn" class="primary-btn" type="submit">Add shift</button>
+                <button id="cancelEditBtn" class="secondary-btn hidden" type="button">Cancel edit</button>
+              </div>
+
+              <p id="formMessage" class="form-message" role="status"></p>
+            </form>
+          </section>
+
+          <section class="card history-card">
+            <div class="section-heading">
+              <div>
+                <h2>Shift history</h2>
+                <p>Filter your records before editing or deleting.</p>
+              </div>
+            </div>
+
+            <div class="history-filters">
+              <label>
+                Search
+                <input id="historySearch" type="search" placeholder="Search note or job" />
+              </label>
+
+              <label>
+                Job
+                <select id="historyJob">
+                  <option value="all">All jobs</option>
+                </select>
+              </label>
+
+              <label>
+                Month
+                <input id="historyMonth" type="month" />
+              </label>
+
+              <button id="clearHistoryFilters" class="secondary-btn filter-reset" type="button">Clear filters</button>
+            </div>
+
+            <section id="shiftList" class="shift-list" aria-live="polite"></section>
+          </section>
+        </section>
+
+        <section id="reportsView" class="app-view" data-view="reports">
+          <section class="page-heading">
+            <p class="eyebrow">REPORTS</p>
+            <h1>Export your timesheet</h1>
+            <p>Choose a period and export only the shifts you need.</p>
+          </section>
+
+          <section class="report-builder card">
+            <div class="report-controls">
+              <label>
+                Period
+                <select id="exportPeriod">
+                  <option value="week">Week</option>
+                  <option value="month" selected>Month</option>
+                  <option value="year">Year</option>
+                  <option value="all">All time</option>
+                </select>
+              </label>
+
+              <label id="exportDateWrap">
+                Choose date
+                <input id="exportDate" type="date" />
+              </label>
+
+              <label>
+                Job
+                <select id="exportJob">
+                  <option value="all">All jobs</option>
+                </select>
+              </label>
+
+              <label>
+                Format
+                <select id="exportFormat">
+                  <option value="pdf">PDF</option>
+                  <option value="doc">Word (.doc)</option>
+                  <option value="csv">CSV</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="reportPreview" class="report-preview" aria-live="polite">
+              <div>
+                <span>Period</span>
+                <strong id="reportPreviewPeriod">—</strong>
+              </div>
+              <div>
+                <span>Shifts</span>
+                <strong id="reportPreviewShifts">0</strong>
+              </div>
+              <div>
+                <span>Hours</span>
+                <strong id="reportPreviewHours">0h 00m</strong>
+              </div>
+              <div>
+                <span>Est. earnings</span>
+                <strong id="reportPreviewEarnings">£0.00</strong>
+              </div>
+            </div>
+
+            <button id="createExportBtn" class="primary-btn full-btn" type="button">Create report</button>
+
+            <p class="helper-text">
+              PDF opens a print-ready timesheet. Choose “Save as PDF” in the print screen.
+            </p>
+          </section>
+
+          <section class="card backup-card">
+            <div class="section-heading">
+              <div>
+                <h2>Backup & restore</h2>
+                <p>Keep a portable copy of your ShiftLog data.</p>
+              </div>
+            </div>
+
+            <div class="backup-actions">
+              <button id="backupBtn" class="secondary-btn" type="button">Download backup</button>
+              <label class="file-button">
+                Restore backup
+                <input id="restoreInput" type="file" accept="application/json,.json" />
+              </label>
+            </div>
+
+            <p class="helper-text">Restoring replaces the current completed shifts, jobs and settings on this copy of ShiftLog.</p>
+          </section>
+        </section>
+
+        <section id="settingsView" class="app-view" data-view="settings">
+          <section class="page-heading">
+            <p class="eyebrow">SETTINGS</p>
+            <h1>Personalise ShiftLog</h1>
+            <p>Set your currency, jobs and hourly rates.</p>
+          </section>
+
+          <section class="card">
+            <div class="section-heading">
+              <div>
+                <h2>General</h2>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label>
+                Currency
+                <select id="currency">
+                  <option value="GBP">GBP — £</option>
+                  <option value="USD">USD — $</option>
+                  <option value="EUR">EUR — €</option>
+                  <option value="SLE">SLE — Le</option>
+                </select>
+              </label>
+
+              <label>
+                Default job
+                <select id="defaultJob"></select>
+              </label>
+            </div>
+
+            <button id="saveSettingsBtn" class="primary-btn" type="button">Save settings</button>
+          </section>
+
+          <section class="card">
+            <div class="section-heading">
+              <div>
+                <h2>Jobs & hourly rates</h2>
+                <p>Rates are used only for estimated earnings.</p>
+              </div>
+            </div>
+
+            <form id="jobForm" class="job-form">
+              <input id="jobEditId" type="hidden" />
+              <div class="job-form-grid">
+                <label>
+                  Job name
+                  <input id="jobName" type="text" maxlength="50" placeholder="e.g. Weekend job" required />
+                </label>
+
+                <label>
+                  Hourly rate
+                  <input id="jobRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" required />
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button id="saveJobBtn" class="primary-btn" type="submit">Add job</button>
+                <button id="cancelJobEditBtn" class="secondary-btn hidden" type="button">Cancel</button>
+              </div>
+            </form>
+
+            <div id="jobList" class="job-list"></div>
+          </section>
+
+          <section class="card install-card">
+            <div>
+              <h2>Install & offline use</h2>
+              <p>ShiftLog is an offline-first PWA. Once loaded, the core app can work without a connection.</p>
+            </div>
+            <button id="installBtn" class="secondary-btn hidden" type="button">Install app</button>
+          </section>
+
+          <section class="card danger-card">
+            <div>
+              <h2>Danger zone</h2>
+              <p>Use this only if you want to remove all ShiftLog data from this browser/app copy.</p>
+            </div>
+            <button id="resetAllBtn" class="danger-btn" type="button">Delete all local data</button>
+          </section>
+
+          <p class="version-label">ShiftLog v2.0 · Local-first PWA</p>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-item active" type="button" data-view-target="dashboard">
+        <span aria-hidden="true">⌂</span>
+        <small>Home</small>
+      </button>
+      <button class="nav-item" type="button" data-view-target="shifts">
+        <span aria-hidden="true">◷</span>
+        <small>Shifts</small>
+      </button>
+      <button class="nav-item" type="button" data-view-target="reports">
+        <span aria-hidden="true">⇩</span>
+        <small>Reports</small>
+      </button>
+      <button class="nav-item" type="button" data-view-target="settings">
+        <span aria-hidden="true">⚙</span>
+        <small>Settings</small>
+      </button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
     <script src="app.js"></script>
   </body>
 </html>

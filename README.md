@@ -1,24 +1,108 @@
-# ShiftLog — Second Job Tracker
+# ShiftLog v2
 
-A simple mobile-first web app for logging second-job shifts and automatically calculating hours.
+ShiftLog is a mobile-first, local-first Progressive Web App (PWA) for recording work shifts, clocking in/out, calculating hours, estimating earnings and exporting timesheet reports.
 
-## MVP features
-- Add date, time-in and time-out
-- Handles overnight shifts automatically (e.g. 5pm–2am = 9h)
-- Calculates monthly total, weekly total, shift count and average shift
-- Edit and delete shifts
-- Saves data in browser localStorage
-- Export all shifts as CSV
-- Works as a responsive web page and can be installed as a PWA on supported browsers
+## What is included
+
+- Persistent one-tap Clock In / Clock Out
+- Live elapsed timer and live estimated earnings
+- Multiple jobs with separate hourly rates
+- Manual shift entry and editing
+- Unpaid break deductions
+- Overnight shift handling
+- Dashboard filters for week, month, year and all time
+- Dashboard filters by job
+- Searchable shift history
+- Duplicate, edit and delete actions
+- Estimated earnings
+- CSV export
+- Word (.doc) export
+- Print-ready PDF report
+- Week / month / year / all-time report filtering
+- Job-specific report filtering
+- JSON backup and restore
+- Offline-first service worker
+- Installable PWA
+- Online / offline indicator
+- Existing `shiftlog_shifts_v1` data migration
+- Existing `shiftlog_active_shift_v1` active-clock migration
+- Responsive mobile navigation
+
+## Data safety
+
+ShiftLog v2 intentionally keeps the original storage keys:
+
+- `shiftlog_shifts_v1`
+- `shiftlog_active_shift_v1`
+
+This allows existing completed shifts and an in-progress legacy clock-in to migrate into the new app.
+
+Additional v2 data uses:
+
+- `shiftlog_active_session_v2`
+- `shiftlog_settings_v2`
+- `shiftlog_jobs_v2`
+
+### Important
+
+Browser storage is local to the browser/app container. Safari and an iPhone Home Screen web app can keep separate local data even when they use the same URL.
+
+Use **Reports → Download backup** regularly if the data matters.
+
+## PDF export
+
+The PDF option opens a print-ready timesheet in a new window. Use the browser/system print screen and select **Save as PDF**.
+
+This keeps the app dependency-free and works without adding a large PDF library.
+
+## GitHub Pages
+
+The app is designed to work from a GitHub Pages project path such as:
+
+`https://turay106-spec.github.io/Kim-s-shiftlog/`
+
+The manifest and service worker use relative URLs so the project can remain under that repository path.
+
+## Development workflow
+
+```text
+Edit in VS Code
+→ Save
+→ git status
+→ git add .
+→ git commit -m "Describe the change"
+→ git push
+→ GitHub Pages updates
+→ Refresh the phone
+```
 
 ## Run locally
-Open `index.html` in a browser. For full PWA behaviour, serve the folder through a local web server, for example with VS Code Live Server.
 
-## Next version
-- One-tap Clock In / Clock Out
-- Monthly calendar
-- Pay-rate and estimated earnings
-- Break deductions
-- Search/filter by month
-- Cloud database + login so records are not tied to one device
-- Backup/restore JSON
+For normal browser development, use VS Code Live Server or any small local HTTP server.
+
+Service workers require HTTP/HTTPS and do not fully work when opening `index.html` directly as a `file://` URL.
+
+## Architecture
+
+The app remains deliberately framework-free:
+
+- HTML: structure
+- CSS: responsive interface
+- JavaScript: state, calculations, reports and UI behaviour
+- localStorage: local persistence
+- Service Worker + Web App Manifest: PWA/offline layer
+
+This keeps ShiftLog easy to inspect while still using production-style browser capabilities.
+
+## Future cloud sync
+
+The current release is local-first and fully usable without a backend.
+
+A future cloud version can add Supabase or another backend for:
+
+- account login
+- multi-device sync
+- remote backups
+- server-side security rules
+
+That should be added as a separate migration so local data remains recoverable.
