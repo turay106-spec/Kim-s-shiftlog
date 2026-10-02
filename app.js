@@ -60,6 +60,10 @@ const exportDateWrap = $("exportDateWrap");
 const exportJob = $("exportJob");
 const exportFormat = $("exportFormat");
 const createExportBtn = $("createExportBtn");
+const pdfPreviewOverlay = $("pdfPreviewOverlay");
+const pdfPreviewFrame = $("pdfPreviewFrame");
+const closePdfPreviewBtn = $("closePdfPreviewBtn");
+const savePdfBtn = $("savePdfBtn");
 
 const currencySelect = $("currency");
 const defaultJobSelect = $("defaultJob");
@@ -1011,27 +1015,29 @@ function createWordReport(model) {
 }
 
 function createPdfReport(model) {
-  const reportWindow = window.open("", "_blank");
-  if (!reportWindow) {
-    showToast("Pop-up blocked. Allow pop-ups, then try PDF again.", 4200);
+  pdfPreviewFrame.srcdoc = buildReportHtml(model);
+  pdfPreviewOverlay.classList.remove("hidden");
+  pdfPreviewOverlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("pdf-preview-open");
+  closePdfPreviewBtn.focus();
+}
+
+function closePdfPreview() {
+  pdfPreviewOverlay.classList.add("hidden");
+  pdfPreviewOverlay.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("pdf-preview-open");
+  pdfPreviewFrame.srcdoc = "";
+}
+
+function printPdfPreview() {
+  const frameWindow = pdfPreviewFrame.contentWindow;
+  if (!frameWindow) {
+    showToast("The PDF preview is not ready yet. Please try again.");
     return;
   }
 
-  let printStarted = false;
-  const startPrint = () => {
-    if (printStarted || reportWindow.closed) return;
-    printStarted = true;
-    reportWindow.focus();
-    reportWindow.print();
-  };
-
-  reportWindow.onload = startPrint;
-  reportWindow.document.open();
-  reportWindow.document.write(buildReportHtml(model));
-  reportWindow.document.close();
-
-  // Fallback for browsers that do not fire load reliably for document.write().
-  window.setTimeout(startPrint, 500);
+  frameWindow.focus();
+  frameWindow.print();
 }
 
 function downloadBlob(content, mimeType, filename) {
@@ -1337,6 +1343,16 @@ createExportBtn.addEventListener("click", () => {
   }
 
   createPdfReport(model);
+});
+
+closePdfPreviewBtn.addEventListener("click", closePdfPreview);
+
+savePdfBtn.addEventListener("click", printPdfPreview);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !pdfPreviewOverlay.classList.contains("hidden")) {
+    closePdfPreview();
+  }
 });
 
 $("backupBtn").addEventListener("click", downloadBackup);

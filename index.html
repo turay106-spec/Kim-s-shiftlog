@@ -274,7 +274,7 @@
             <button id="createExportBtn" class="primary-btn full-btn" type="button">Create report</button>
 
             <p class="helper-text">
-              PDF opens a print-ready timesheet. Choose “Save as PDF” in the print screen.
+              PDF opens inside ShiftLog first. On iPhone, tap “Save PDF”, then use the Share button in the print preview and choose “Save to Files”.
             </p>
           </section>
 
@@ -379,7 +379,7 @@
             <button id="resetAllBtn" class="danger-btn" type="button">Delete all local data</button>
           </section>
 
-          <p class="version-label">ShiftLog v2.0 · Local-first PWA</p>
+          <p class="version-label">ShiftLog v2.0.1 · Local-first PWA</p>
         </section>
       </main>
     </div>
@@ -402,6 +402,32 @@
         <small>Settings</small>
       </button>
     </nav>
+
+    <section
+      id="pdfPreviewOverlay"
+      class="pdf-preview-overlay hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pdfPreviewTitle"
+      aria-hidden="true"
+    >
+      <header class="pdf-preview-toolbar">
+        <button id="closePdfPreviewBtn" class="secondary-btn" type="button">← Back to ShiftLog</button>
+        <div class="pdf-preview-title">
+          <strong id="pdfPreviewTitle">PDF preview</strong>
+          <span>iPhone: tap Save PDF → Share → Save to Files.</span>
+        </div>
+        <button id="savePdfBtn" class="primary-btn pdf-save-btn" type="button">Save PDF</button>
+      </header>
+
+      <div class="pdf-preview-stage">
+        <iframe
+          id="pdfPreviewFrame"
+          class="pdf-preview-frame"
+          title="ShiftLog PDF report preview"
+        ></iframe>
+      </div>
+    </section>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "shiftlog-v2.0.0";
+const CACHE_NAME = "shiftlog-v2.0.1";
 const APP_SHELL = [
   "./",
   "./index.html",
